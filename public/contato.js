@@ -19,21 +19,29 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
     // Validações
 
     let valid = true;
-
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+    const telefoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
 
     if (!nome) {
         alert('Nome é obrigatório.');
-         return false;
+        return false;
+    } else if (!regex.test(nome)){
+        alert('Nome inválido, permitido somente letras.');
+        return false;
     }
 
     if (!email || !validateEmail(email)) {
         alert('E-mail inválido.');
         return false;
     }
-   /* if (telefone && !validatePhone(telefone)) {
+
+    if (!telefone) {
+        alert('Telefone é obrigatório.');
+        return valid = true;
+    } else if (!telefoneRegex.test(telefone)) {
         alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-        valid = false;
-    }*/
+        return valid = true;
+    }
 
     if (!mensagem) {
         alert('Mensagem é obrigatória.');
@@ -124,10 +132,10 @@ function validateEmail(email) {
     return re.test(email);
 }
 
-/*function validatePhone(phone) {
+function validatePhone(phone) {
     const re = /^\(\d{2}\) \d{4,5}-\d{4}$/;
     return re.test(phone);
-}*/
+}
 
 
 const modalEditarContato = new bootstrap.Modal(document.getElementById('modalEditarContato'));
