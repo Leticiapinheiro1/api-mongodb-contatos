@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.getElementById('formulario-contato').addEventListener('submit', async function (event){ 
+document.getElementById('formulario-contato').addEventListener('submit', async function (event) {
     event.preventDefault();
 
     // Obter valores dos campos
@@ -20,27 +20,23 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
 
     let valid = true;
     const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-    const telefoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
 
     if (!nome) {
         alert('Nome é obrigatório.');
         return false;
-    } else if (!regex.test(nome)){
+    } else if (!regex.test(nome)) {
         alert('Nome inválido, permitido somente letras.');
         return false;
     }
 
     if (!email || !validateEmail(email)) {
         alert('E-mail inválido.');
-        return false;
+        valid = false;
     }
 
-    if (!telefone) {
+    if (!telefone || !validarTelefone(telefone)) {
         alert('Telefone é obrigatório.');
-        return valid = true;
-    } else if (!telefoneRegex.test(telefone)) {
-        alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-        return valid = true;
+        valid = false;
     }
 
     if (!mensagem) {
@@ -132,10 +128,69 @@ function validateEmail(email) {
     return re.test(email);
 }
 
-function validatePhone(phone) {
-    const re = /^\(\d{2}\) \d{4,5}-\d{4}$/;
-    return re.test(phone);
+function validarTelefone(telefone) {
+    let valid = true;
+
+    // Verificar se o telefone está presente
+    if (!telefone) {
+        alert('Telefone é obrigatório.');
+        return false;
+    }
+
+    // Verificar o comprimento total do telefone
+    if (telefone.length !== 14 && telefone.length !== 15) {
+        alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
+        return false;
+    }
+
+    // Verificar formato (DD) XXXX-XXXX ou (DD) XXXXX-XXXX
+    if (telefone[0] !== '(' || telefone[3] !== ')'|| telefone[9] !== '-') {
+        alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
+        return false;
+    }
+
+    // Verificar se os caracteres das posições específicas são dígitos
+    for (let i = 1; i <= 2; i++) {
+        if (!isDigit(telefone[i])) {
+            alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
+            return false;
+        }
+    }
+
+    for (let i = 5; i <= 8; i++) {
+        if (!isDigit(telefone[i])) {
+            alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
+            return false;
+        }
+    }
+
+    if (telefone.length === 15) {
+        if (!isDigit(telefone[10])) {
+            alert('Telefone inválido. Formato esperado: (DD) XXXXX-XXXX');
+            return false;
+        }
+        for (let i = 11; i <= 14; i++) {
+            if (!isDigit(telefone[i])) {
+                alert('Telefone inválido. Formato esperado: (DD) XXXXX-XXXX');
+                return false;
+            }
+        }
+    } else {
+        for (let i = 10; i <= 13; i++) {
+            if (!isDigit(telefone[i])) {
+                alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX');
+                return false;
+            }
+        }
+    }
+
+    return valid;
 }
+
+function isDigit(char) {
+    return char >= '0' && char <= '9';
+}
+
 
 
 const modalEditarContato = new bootstrap.Modal(document.getElementById('modalEditarContato'));
