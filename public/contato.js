@@ -52,7 +52,7 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
     }
 
     if (!telefone || !validarTelefone(telefone)) {
-        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado: (DD)XXXX-XXXX ou (DD)XXXXX-XXXX';
+        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX';
         document.getElementById('telefone-erro').style.display = 'block';
         console.log('Telefone é obrigatório ou inválido.');
         valid = false;
@@ -147,7 +147,7 @@ document.getElementById('telefone').addEventListener('input', function () {
         document.getElementById('telefone-erro').style.display = 'none';
         document.getElementById('tipo').disabled = false; // Ativar o próximo campo
     } else {
-        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado:(DD)XXXX-XXXX ou (DD)XXXXX-XXXX';
+        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado:(DD) XXXX-XXXX ou (DD) XXXXX-XXXX';
         document.getElementById('telefone-erro').style.display = 'block';
         document.getElementById('tipo').disabled = true; // Desativar o próximo campo
     }
@@ -160,54 +160,53 @@ function validateEmail(email) {
 }
 
 function validarTelefone(telefone) {
-    let valid = true;
-
+    // Verifica se o telefone é fornecido
     if (!telefone) {
         return false;
     }
 
+    // Verifica o comprimento do telefone (deve ser 14 ou 15 caracteres)
     if (telefone.length !== 14 && telefone.length !== 15) {
         return false;
     }
 
+    // Verifica o formato dos caracteres especiais
     if (telefone[0] !== '(' || telefone[3] !== ')' || telefone[telefone.length - 5] !== '-') {
         return false;
     }
 
+    // Função auxiliar para verificar se um caractere é um dígito
+    function isDigit(char) {
+        return char >= '0' && char <= '9';
+    }
+
+    // Verifica os dois primeiros dígitos (código de área)
     for (let i = 1; i <= 2; i++) {
         if (!isDigit(telefone[i])) {
             return false;
         }
     }
 
-    for (let i = 5; i <= 8; i++) {
+    // Verifica os dígitos principais
+    // Índices para números de 8 ou 9 dígitos
+    let start = telefone.length === 15 ? 5 : 5; // 5º caractere sempre é um dígito
+    let end = telefone.length === 15 ? 9 : 8; // 9º para números de 11 dígitos, 8º para números de 10 dígitos
+
+    for (let i = start; i <= end; i++) {
         if (!isDigit(telefone[i])) {
             return false;
         }
     }
 
-    if (telefone.length === 15) {
-        if (!isDigit(telefone[10])) {
+    // Verifica os últimos quatro dígitos
+    for (let i = telefone.length - 4; i < telefone.length; i++) {
+        if (!isDigit(telefone[i])) {
             return false;
-        }
-        for (let i = 11; i <= 14; i++) {
-            if (!isDigit(telefone[i])) {
-                return false;
-            }
-        }
-    } else {
-        for (let i = 10; i <= 13; i++) {
-            if (!isDigit(telefone[i])) {
-                return false;
-            }
         }
     }
 
-    return valid;
-}
-
-function isDigit(char) {
-    return char >= '0' && char <= '9';
+    // Se passou por todas as verificações, é válido
+    return true;
 }
 
 document.getElementById('editar-contato').addEventListener('click', async function (event) {
