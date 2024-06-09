@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Inicialmente desativar todos os campos exceto o primeiro
+document.getElementById('email').disabled = true;
+document.getElementById('telefone').disabled = true;
+document.getElementById('tipo').disabled = true;
+
+
 document.getElementById('formulario-contato').addEventListener('submit', async function (event) {
     event.preventDefault();
 
@@ -16,31 +22,46 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
     const tipo = document.getElementById('tipo').value;
     const mensagem = document.getElementById('mensagem').value;
 
-    // Validações
+    // Limpar mensagens de erro anteriores
+    document.getElementById('nome-erro').style.display = 'none';
+    document.getElementById('email-erro').style.display = 'none';
+    document.getElementById('telefone-erro').style.display = 'none';
+    document.getElementById('mensagem-erro').style.display = 'none';
 
     let valid = true;
     const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
 
+    // Validações
     if (!nome) {
-        alert('Nome é obrigatório.');
-        return false;
+        document.getElementById('nome-erro').innerText = 'Nome é obrigatório.';
+        document.getElementById('nome-erro').style.display = 'block';
+        console.log('Nome é obrigatório.');
+        valid = false;
     } else if (!regex.test(nome)) {
-        alert('Nome inválido, permitido somente letras.');
-        return false;
+        document.getElementById('nome-erro').innerText = 'Nome inválido, permitido somente letras.';
+        document.getElementById('nome-erro').style.display = 'block';
+        console.log('Nome inválido, permitido somente letras.');
+        valid = false;
     }
 
     if (!email || !validateEmail(email)) {
-        alert('E-mail inválido.');
+        document.getElementById('email-erro').innerText = 'E-mail inválido.';
+        document.getElementById('email-erro').style.display = 'block';
+        console.log('E-mail inválido.');
         valid = false;
     }
 
     if (!telefone || !validarTelefone(telefone)) {
-        alert('Telefone é obrigatório.');
+        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado: (DD)XXXX-XXXX ou (DD)XXXXX-XXXX';
+        document.getElementById('telefone-erro').style.display = 'block';
+        console.log('Telefone é obrigatório ou inválido.');
         valid = false;
     }
 
     if (!mensagem) {
-        alert('Mensagem é obrigatória.');
+        document.getElementById('mensagem-erro').innerText = 'Mensagem é obrigatória.';
+        document.getElementById('mensagem-erro').style.display = 'block';
+        console.log('Mensagem é obrigatória.');
         valid = false;
     }
 
@@ -76,6 +97,10 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
             setCookie(`contato_${result.id_contato}`, JSON.stringify(dados), 1);
             getCookie('contato');
             alert('Mensagem enviada com sucesso! Sua mensagem poderá ser editada em até 1 hora!');
+
+            // Limpar o formulário
+            document.getElementById('formulario-contato').reset(); // Substitua 'meuFormulario' pelo ID do seu formulário
+
         } else {
             const error = await response.json();
             console.error('Erro do servidor:', error); // Log do erro do servidor
@@ -87,13 +112,111 @@ document.getElementById('formulario-contato').addEventListener('submit', async f
     }
 });
 
+// Validação em tempo real
+document.getElementById('nome').addEventListener('input', function () {
+    const nome = this.value.trim();
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+
+    if (nome && regex.test(nome)) {
+        document.getElementById('nome-erro').style.display = 'none';
+        document.getElementById('email').disabled = false; // Ativar o próximo campo
+    } else {
+        document.getElementById('nome-erro').innerText = 'Nome é obrigatório e deve conter somente letras.';
+        document.getElementById('nome-erro').style.display = 'block';
+        document.getElementById('email').disabled = true; // Desativar o próximo campo
+    }
+});
+
+document.getElementById('email').addEventListener('input', function () {
+    const email = this.value.trim();
+
+    if (email && validateEmail(email)) {
+        document.getElementById('email-erro').style.display = 'none';
+        document.getElementById('telefone').disabled = false; // Ativar o próximo campo
+    } else {
+        document.getElementById('email-erro').innerText = 'E-mail inválido.';
+        document.getElementById('email-erro').style.display = 'block';
+        document.getElementById('telefone').disabled = true; // Desativar o próximo campo
+    }
+});
+
+document.getElementById('telefone').addEventListener('input', function () {
+    const telefone = this.value.trim();
+
+    if (telefone && validarTelefone(telefone)) {
+        document.getElementById('telefone-erro').style.display = 'none';
+        document.getElementById('tipo').disabled = false; // Ativar o próximo campo
+    } else {
+        document.getElementById('telefone-erro').innerText = 'Telefone é inválido. Formato esperado:(DD)XXXX-XXXX ou (DD)XXXXX-XXXX';
+        document.getElementById('telefone-erro').style.display = 'block';
+        document.getElementById('tipo').disabled = true; // Desativar o próximo campo
+    }
+});
+
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function validarTelefone(telefone) {
+    let valid = true;
+
+    if (!telefone) {
+        return false;
+    }
+
+    if (telefone.length !== 14 && telefone.length !== 15) {
+        return false;
+    }
+
+    if (telefone[0] !== '(' || telefone[3] !== ')' || telefone[telefone.length - 5] !== '-') {
+        return false;
+    }
+
+    for (let i = 1; i <= 2; i++) {
+        if (!isDigit(telefone[i])) {
+            return false;
+        }
+    }
+
+    for (let i = 5; i <= 8; i++) {
+        if (!isDigit(telefone[i])) {
+            return false;
+        }
+    }
+
+    if (telefone.length === 15) {
+        if (!isDigit(telefone[10])) {
+            return false;
+        }
+        for (let i = 11; i <= 14; i++) {
+            if (!isDigit(telefone[i])) {
+                return false;
+            }
+        }
+    } else {
+        for (let i = 10; i <= 13; i++) {
+            if (!isDigit(telefone[i])) {
+                return false;
+            }
+        }
+    }
+
+    return valid;
+}
+
+function isDigit(char) {
+    return char >= '0' && char <= '9';
+}
+
 document.getElementById('editar-contato').addEventListener('click', async function (event) {
     event.preventDefault();
     let id_contato = this.getAttribute('data-id-contato');
     const dados = {
         name: document.getElementById('modal-nome').value,
         email: document.getElementById('modal-email').value.trim(),
-        telefone: document.getElementById('telefone').value.trim(),
+        telefone: document.getElementById('modal-telefone').value.trim(),
         mensagem: document.getElementById('modal-mensagem').value
     };
 
@@ -123,76 +246,6 @@ document.getElementById('editar-contato').addEventListener('click', async functi
     }
 });
 
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-function validarTelefone(telefone) {
-    let valid = true;
-
-    // Verificar se o telefone está presente
-    if (!telefone) {
-        alert('Telefone é obrigatório.');
-        return false;
-    }
-
-    // Verificar o comprimento total do telefone
-    if (telefone.length !== 14 && telefone.length !== 15) {
-        alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-        return false;
-    }
-
-    // Verificar formato (DD) XXXX-XXXX ou (DD) XXXXX-XXXX
-    if (telefone[0] !== '(' || telefone[3] !== ')'|| telefone[9] !== '-') {
-        alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-        return false;
-    }
-
-    // Verificar se os caracteres das posições específicas são dígitos
-    for (let i = 1; i <= 2; i++) {
-        if (!isDigit(telefone[i])) {
-            alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-            return false;
-        }
-    }
-
-    for (let i = 5; i <= 8; i++) {
-        if (!isDigit(telefone[i])) {
-            alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX');
-            return false;
-        }
-    }
-
-    if (telefone.length === 15) {
-        if (!isDigit(telefone[10])) {
-            alert('Telefone inválido. Formato esperado: (DD) XXXXX-XXXX');
-            return false;
-        }
-        for (let i = 11; i <= 14; i++) {
-            if (!isDigit(telefone[i])) {
-                alert('Telefone inválido. Formato esperado: (DD) XXXXX-XXXX');
-                return false;
-            }
-        }
-    } else {
-        for (let i = 10; i <= 13; i++) {
-            if (!isDigit(telefone[i])) {
-                alert('Telefone inválido. Formato esperado: (DD) XXXX-XXXX');
-                return false;
-            }
-        }
-    }
-
-    return valid;
-}
-
-function isDigit(char) {
-    return char >= '0' && char <= '9';
-}
-
-
-
 const modalEditarContato = new bootstrap.Modal(document.getElementById('modalEditarContato'));
 async function editarContato(button) {
     let id_contato = button.getAttribute('data-id-contato');
@@ -220,6 +273,13 @@ async function editarContato(button) {
         alert('Erro ao enviar a mensagem. Por favor, tente novamente mais tarde.');
     }
 }
+document.getElementById('editar-contato').addEventListener('click', function () {
+    const modal = document.getElementById('modalEditarContato');
+    modal.addEventListener('shown.bs.modal', function () {
+        document.getElementById('modal-nome').focus();
+    });
+});
+
 
 function setCookie(name, value, hours) {
     const date = new Date();
@@ -273,3 +333,4 @@ function limparTabela() {
     const tableBody = document.getElementById('table-contato').getElementsByTagName('tbody')[0];
     tableBody.innerHTML = '';
 }
+

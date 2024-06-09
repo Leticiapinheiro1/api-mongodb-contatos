@@ -12,7 +12,7 @@ connectDatabase()
 
 app.use(express.json());
 app.use("/contato", contatoRoute)
-app.use("/",express.static('public'))///rota para o front
+app.use("/",express.static('public'))///rota para o front -- paginas contato e adm/tables 
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', '*');
     res.append('Access-Control-Allow-Headers', '*');

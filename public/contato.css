@@ -60,6 +60,27 @@ header {
     margin-top: 7%;
     margin-right: 1%;
 }
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.erro {
+    color: red;
+    font-size: 0.9em;
+    display: none; /* Oculto por padrão */
+}
+
 
 h3 {
     padding: 20px;
