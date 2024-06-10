@@ -219,6 +219,50 @@ document.getElementById('editar-contato').addEventListener('click', async functi
         mensagem: document.getElementById('modal-mensagem').value
     };
 
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        } 
+    });
+    
+    let error = null;
+
+    if (!dados.name) {
+        Toast.fire({
+            icon: "error",
+            title: "Nome é obrigatório."
+        });
+        
+        error = true;
+    } else if (!regex.test(dados.name)) {
+        Toast.fire({
+            icon: "error",
+            title: "Nome inválido, permitido somente letras."
+        });
+
+        error = true;
+    }
+
+    if (!dados.telefone || !validarTelefone(dados.telefone)) {
+        Toast.fire({
+            icon: "error",
+            title: "Telefone é inválido. Formato esperado: (DD) XXXX-XXXX ou (DD) XXXXX-XXXX"
+        });
+
+        error = true;
+    }
+
+    if (error) {
+        return;
+    }
+
     try {
         const response = await fetch(`http://localhost:3001/contato/${id_contato}`, {
             method: 'PATCH',
